@@ -1,41 +1,68 @@
-import json
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
+import os
 
-# URL of the webpage you want to scrape
-url = 'https://www.stjude.org/treatment/patient-resources/caregiver-resources/medicines/a-z-list-of-medicines.html'
+def My_Scrapper(url,tag):
 
-# Send an HTTP GET request to the URL
-response = requests.get(url)
+    header = { 
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+    }
 
-# Parse the HTML content of the page using BeautifulSoup
-soup = BeautifulSoup(response.content, 'html.parser')
+    response = requests.get(url,headers = header)
+    html_content = response.content
 
-# Find all elements with a specific class that contains the article titles
+    soup = BeautifulSoup(html_content, "html.parser")
 
-# Finding by id
-s = soup.find('div', class_= 'par-1 parsys')
-# Getting the leftbar
-leftbar = s.find('ul', class_='list-filter links')
- 
-# All the li under the above ul
-content = leftbar.find_all('li')
+    # main_tag = soup.find_all('h2')
+    Questions = soup.find_all(tag)
+    # print(Questions)
 
-medicine_list = []
+    Ques_List = list()
 
-# find a in li:
-for x in content:
-    anchor = x.find('a')
-    data = anchor.text
-    # print(anchor.text)
-    cleaned_data = data.strip()
-    medicine_list.append(cleaned_data)
- 
-# print(medicine_list)
+    for ques in Questions:
+        Ques_List.append(ques.text)
 
-json_medicine_list = json.dumps(medicine_list)
+    return Ques_List
 
-print(json_medicine_list)
+def list_to_csv(Q_list,file_name):
+    list_len = len(Q_list)
+    df = pd.DataFrame(Q_list)
+    df.index +=1
 
-with open("data.json", "w") as json_medicine_list_json_file:
-    json.dump(json_medicine_list, json_medicine_list_json_file)
+    df.columns = ['Questions']
+    print(df)
+    df.to_csv(f'C:/Users/sayan/Desktop/Sayantan/Python/wEb ScraPper/questions_sheets/{file_name}.csv', encoding="utf-8-sig")
+    print(f'your csv file for {file_name} is ready with {list_len} Questions !')
+
+url_1 = 'https://www.javatpoint.com/javascript-interview-questions'
+tag_1 = 'h3'
+scraped_data_1 = My_Scrapper(url_1,tag_1)
+scraped_data_1 = scraped_data_1[:-4]
+
+url_2 = 'https://www.interviewbit.com/javascript-interview-questions/'
+tag_2 = 'h3'
+scraped_data_2 = My_Scrapper(url_2,tag_2)
+scraped_data_2 = scraped_data_2[2:-3]
+
+url_3 = 'https://www.simplilearn.com/tutorials/javascript-tutorial/javascript-interview-questions'
+tag_3 = 'h3'
+scraped_data_3 = My_Scrapper(url_3,tag_3)
+scraped_data_3 = scraped_data_3[1:]
+
+new_list = []
+# '''
+print(len(scraped_data_3))
+for i in scraped_data_3:
+    print(i)
+    new_list.append(i)
+
+# print(len((set(new_list))))
+# '''
+
+
+# '''
+list_of_lists = [[new_list,'Javascript_Q_set']]
+for i in list_of_lists:
+    list_to_csv(i[0],i[1])
+# '''
